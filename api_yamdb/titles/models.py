@@ -15,9 +15,18 @@ class Categories(models.Model):
 
 class Title(models.Model):
     name = models.TextField()
-    year = models.IntegerField()
-    rating = models.IntegerField()
-    description = models.TextField()
+    year = models.IntegerField(
+        blank=True,
+        null=True
+    )
+    rating = models.IntegerField(
+        blank=True,
+        null=True
+    )
+    description = models.TextField(
+        blank=True,
+        null=True
+    )
     genres = models.ManyToManyField(
         Genres,
     )
