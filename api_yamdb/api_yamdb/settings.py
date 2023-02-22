@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'titles.apps.TitlesConfig',
+    'api.apps.ApiConfig',
     'api_yamdb',
 ]
 
