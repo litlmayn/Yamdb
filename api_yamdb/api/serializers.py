@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers, filters
 from users.models import User
 from titles.models import Categories, Genres, Title
 from review.models import Review, Comment
@@ -79,7 +79,7 @@ class CategoryField(serializers.SlugRelatedField):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    genres = GenreField(
+    genre = GenreField(
         slug_field='slug',
         queryset=Genres.objects.all(),
         many=True
@@ -94,8 +94,10 @@ class TitleSerializer(serializers.ModelSerializer):
         model = Title
         fields = (
             'id', 'name', 'year', 'rating',
-            'description', 'genres', 'categories',
+            'description', 'genre', 'categories',
         )
+        filter_backends = (filters.SearchFilter,)
+        search_fields = ('genre')
 
 
 class CommentSerializer(serializers.ModelSerializer):

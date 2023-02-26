@@ -1,5 +1,6 @@
-from rest_framework import viewsets, mixins, status
+from rest_framework import viewsets, mixins, status, filters
 from rest_framework.decorators import action
+from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -20,6 +21,7 @@ from .serializers import (
     GenresSerializer, TitleSerializer, CategorieSerializer, CommentSerializer,
     ReviewSerializer)
 from titles.models import Title, Genres, Categories
+from .filters import TitleFilter
 
 
 class GetListCreateDeleteViewSet(mixins.ListModelMixin,
@@ -33,6 +35,8 @@ class GenresViewSet(GetListCreateDeleteViewSet):
     queryset = Genres.objects.all()
     serializer_class = GenresSerializer
     lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     pagination_class = PageNumberPagination
     permission_classes = (IsAdminOrReadOnly,)
 
@@ -41,6 +45,8 @@ class CategoriesViewSet(GetListCreateDeleteViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategorieSerializer
     lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     pagination_class = PageNumberPagination
     permission_classes = (IsAdminOrReadOnly,)
 
@@ -50,6 +56,8 @@ class TitlesViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     pagination_class = PageNumberPagination
     permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
 
 
 class UserViewSet(viewsets.ModelViewSet):
