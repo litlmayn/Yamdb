@@ -37,3 +37,11 @@ class IsUserAdminModeratorOrReadOnly(permissions.BasePermission):
             or request.user.role == User.MODERATOR
             or request.user.role == User.ADMIN
         )
+
+
+class IsAuthorOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return (
+            obj.author == request.user
+            or request.method in permissions.SAFE_METHODS
+        )
