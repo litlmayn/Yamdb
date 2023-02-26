@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
 from .views import CategoriesViewSet, TitlesViewSet, GenresViewSet
+from review.views import ReviewViewset, CommentViewSet
 
 router = SimpleRouter()
 router.register(
@@ -12,6 +13,12 @@ router.register(
 )
 router.register(
     r'genres', GenresViewSet, basename='genres'
+)
+router.register(
+    r'titles', ReviewViewset, basename='reviews'
+)
+router.register(
+    r'titles', CommentViewSet, basename='comments'
 )
 
 

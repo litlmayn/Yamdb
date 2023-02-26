@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'titles.apps.TitlesConfig',
     'api.apps.ApiConfig',
+    'reviews.apps.ReviewsConfig',
     'api_yamdb',
 ]
 
