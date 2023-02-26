@@ -3,7 +3,9 @@ from django.db import models
 
 class Genres(models.Model):
     name = models.TextField(max_length=50)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(
+        'Slug', unique=True
+    )
     description = models.TextField()
 
 
@@ -33,6 +35,9 @@ class Title(models.Model):
     categories = models.ForeignKey(
         Categories,
         on_delete=models.CASCADE,
+        related_name='сategories',
+        blank=True,
+        null=True,
     )
 
     def __str__(self):
