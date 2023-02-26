@@ -17,10 +17,10 @@ router.register(
     r'genres', GenresViewSet, basename='genres'
 )
 router.register(
-    r'titles', ReviewViewset, basename='reviews'
+    r'reviews', ReviewViewset, basename='reviews'
 )
 router.register(
-    r'titles', CommentViewSet, basename='comments'
+    r'comments', CommentViewSet, basename='comments'
 )
 
 
