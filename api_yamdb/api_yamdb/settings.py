@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-import os
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,13 +24,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'titles.apps.TitlesConfig',
-    'api.apps.ApiConfig',
-    'reviews.apps.ReviewsConfig',
-    'api_yamdb',
-    'rest_framework',
     'rest_framework_simplejwt',
+    'titles',
     'api',
+    'review',
     'users',
 ]
 
@@ -52,7 +48,7 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'TEMPLATES_DIR],
+        'DIRS': [TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
