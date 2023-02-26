@@ -4,9 +4,9 @@ from rest_framework.permissions import (
     IsAuthenticated, IsAuthenticatedOrReadOnly
 )
 
-from ..api_yamdb.serializers import CommentSerializer, ReviewSerializer
+from .serializers import CommentSerializer, ReviewSerializer
 from .models import Title, Comment, Review
-from ..api_yamdb.permissions import IsAuthorOrReadOnly
+from .permissions import IsAuthorOrReadOnly
 
 class ReviewViewset(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
