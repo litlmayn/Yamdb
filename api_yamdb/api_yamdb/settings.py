@@ -25,10 +25,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
-    'titles',
-    'api',
-    'review',
-    'users',
+    'titles.apps.TitlesConfig',
+    'api.apps.ApiConfig',
+    'review.apps.ReviewConfig',
+    'users.apps.UsersConfig',
+    'api_yamdb',
 ]
 
 MIDDLEWARE = [
