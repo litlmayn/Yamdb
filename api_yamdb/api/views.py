@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .permissions import IsAdminOrReadOnly
 from .serializers import (
     SignupSerializer, UserSerializer, ProfileSerializer, TokenSerializer,
     GenresSerializer, TitleSerializer, CategorieSerializer, CommentSerializer,
@@ -33,6 +34,7 @@ class GenresViewSet(GetListCreateDeleteViewSet):
     serializer_class = GenresSerializer
     lookup_field = 'slug'
     pagination_class = PageNumberPagination
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class CategoriesViewSet(GetListCreateDeleteViewSet):
@@ -40,12 +42,14 @@ class CategoriesViewSet(GetListCreateDeleteViewSet):
     serializer_class = CategorieSerializer
     lookup_field = 'slug'
     pagination_class = PageNumberPagination
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     pagination_class = PageNumberPagination
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class UserViewSet(viewsets.ModelViewSet):
