@@ -1,6 +1,16 @@
 from rest_framework import viewsets, mixins
-
-from .serializers import GenresSerializer, TitleSerializer, CategorieSerializer
+from rest_framework.decorators import action
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from .serializers import (
+    SignupSerializer, UserSerializer, ProfileSerializer, TokenSerializer,
+    GenresSerializer, TitleSerializer, CategorieSerializer)
+from django.shortcuts import get_object_or_404
+from users.models import User
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import status, viewsets, mixins
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from titles.models import Title, Genres, Categories
 
 
@@ -24,18 +34,6 @@ class CategoriesViewSet(GetListCreateDeleteViewSet):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-
-from rest_framework.decorators import action
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from .serializers import (
-    SignupSerializer, UserSerializer, ProfileSerializer, TokenSerializer)
-from django.shortcuts import get_object_or_404
-from users.models import User
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework import status, viewsets, mixins
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserViewSet(viewsets.ModelViewSet):

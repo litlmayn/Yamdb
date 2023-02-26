@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from users.models import User
+from titles.models import Categories, Genres, Title
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -44,9 +45,6 @@ class SignupSerializer(serializers.ModelSerializer):
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField(max_length=150)
-from rest_framework import serializers
-
-from titles.models import Categories, Genres, Title
 
 
 class GenresSerializer(serializers.ModelSerializer):
