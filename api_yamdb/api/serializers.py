@@ -14,8 +14,18 @@ class UserSerializer(serializers.ModelSerializer):
             'email': {'required': True},
             'username': {'required': True}}
 
+    def validate_email(self, value):
+        if value == self.context['request'].user:
+            raise serializers.ValidationError(
+                'Данный email уже зарегистрирован'
+            )
+        return value
+
 
 class ProfileSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z', max_length=150)
+    email = serializers.CharField(max_length=254)
+
     class Meta:
         model = User
         fields = (
@@ -29,23 +39,30 @@ class SignupSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email')
 
-    def validate_username(self, value):
-        if value == 'me':
+    def validate(self, data):
+        if data.get('username') == 'me':
             raise serializers.ValidationError(
                 'Имя "me" в качестве username запрещено')
-        return value
-
-    def validate_email(self, value):
-        if value == self.context['request'].user:
+        if User.objects.filter(username=data.get('username')):
             raise serializers.ValidationError(
-                'Данный email уже зарегистрирован'
+                'Пользователь с таким username уже существует'
             )
-        return value
+        if User.objects.filter(email=data.get('email')):
+            raise serializers.ValidationError(
+                'Данный email уже зарегистрирован')
+        return data
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    confirmation_code = serializers.CharField(max_length=150)
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+$',
+        max_length=150,
+        required=True
+    )
+    confirmation_code = serializers.CharField(
+        max_length=150,
+        required=True
+    )
 
 
 class GenresSerializer(serializers.ModelSerializer):
@@ -89,7 +106,7 @@ class TitleSerializer(serializers.ModelSerializer):
         queryset=Categories.objects.all()
     )
     rating = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Title
         fields = (
