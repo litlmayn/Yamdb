@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from users.models import User
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .permissions import (IsAuthorOrReadOnly)
 from django.shortcuts import get_object_or_404
 from users.models import User
@@ -62,10 +63,12 @@ class TitlesViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (IsAdminOrSuperUser,)
 
     @action(
         detail=False,
         methods=['GET', 'PATCH'],
+        url_path='me',
         permission_classes=[IsAuthenticated],
     )
     def get_profile(request):
