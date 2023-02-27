@@ -7,6 +7,10 @@ class Review(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
     )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации'
+    )
     text = models.TextField()
     score = models.IntegerField()
     title = models.ForeignKey(
@@ -20,6 +24,10 @@ class Review(models.Model):
 class Comment(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
+    )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации'
     )
     text = models.TextField()
     review = models.ForeignKey(

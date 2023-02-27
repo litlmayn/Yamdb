@@ -6,11 +6,10 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from users.models import User
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .permissions import (IsAuthorOrReadOnly)
 from django.shortcuts import get_object_or_404
 from users.models import User
-from review.models import Comment, Review
+from review.models import Review
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -125,7 +124,7 @@ class TokenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
 class ReviewViewset(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthorOrReadOnly]
 
     def get_title(self):
         """Достаем произведение."""
@@ -133,7 +132,7 @@ class ReviewViewset(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Проверка отзыва."""
-        return Review.objects.filter(title_id=self.get_title().id)
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
         """Создание отзыва."""
@@ -145,7 +144,7 @@ class ReviewViewset(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthorOrReadOnly]
 
     def get_review(self):
         """Достаем отзыв."""
@@ -153,7 +152,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Проверка комментария."""
-        return Comment.objects.filter(review_id=self.get_review().id)
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         """Создание комментария."""
