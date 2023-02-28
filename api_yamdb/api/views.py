@@ -66,18 +66,21 @@ class SignupViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = SignupSerializer
     permission_classes = (AllowAny,)
 
-    def create(self, request):
-        serializer = SignupSerializer(data=request.data)
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        username = data.get('username')
         serializer.is_valid(raise_exception=True)
-        user, _ = User.objects.get_or_create(
-            **serializer.validated_data)
+        serializer.save()
+        user = User.objects.get(username=username)
         confirmation_code = default_token_generator.make_token(user)
+        email = user.email
         send_mail(
             'Код подтверждения',
             f'Ваш код подтверждения: {confirmation_code}',
             f'{settings.EMAIL_YAMDB}',
-            email=user.email,
-            fail_silenty=False,)
+            [email],
+            fail_silently=False,)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -86,7 +89,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (IsAdminOrSuperUser,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('username')
+    search_fields = ('username',)
 
     @action(
         detail=False,
@@ -94,7 +97,7 @@ class UserViewSet(viewsets.ModelViewSet):
         url_path=r'(?P<username>[\w.@+-]+)',
         url_name='get_user'
     )
-    def get_username(self, request, username):
+    def get_user(self, request, username):
         user = get_object_or_404(User, username=username)
         if request.method == 'PATCH':
             serializer = UserSerializer(user, data=request.data, partial=True)
@@ -110,17 +113,20 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=['GET', 'PATCH'],
-        url_path='me',
-        url_name='me',
         permission_classes=[IsAuthenticated],
+        url_path='me',
     )
     def get_profile(self, request):
+        serializer = ProfileSerializer(request.user)
+        if 'role' in request.data:
+            return Response(serializer.data,
+                            status=status.HTTP_400_BAD_REQUEST)
         if request.method == 'PATCH':
-            serializer = ProfileSerializer(request.user, data=request.data)
+            serializer = ProfileSerializer(request.user, data=request.data,
+                                           partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        serializer = ProfileSerializer(request.user)
         return Response(serializer.data)
 
 
@@ -135,10 +141,11 @@ class TokenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         username = serializer.validated_data.get('username')
         confirmation_code = serializer.validated_data.get('confirmation_code')
         user = get_object_or_404(User, username=username)
-        if confirmation_code == user.confirmation_code:
-            token = AccessToken.for_user(user)
-            return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
-        return Response({'confirmation_code': 'Неверный код подтверждения'}, status=status.HTTP_200_OK)
+        if not default_token_generator.check_token(user, confirmation_code):
+            return Response({'confirmation_code': 'Неверный код подтверждения'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        token = AccessToken.for_user(user)
+        return Response(token, status=status.HTTP_200_OK)
 
 
 class ReviewViewset(viewsets.ModelViewSet):

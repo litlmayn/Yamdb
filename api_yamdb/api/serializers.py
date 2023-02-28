@@ -39,30 +39,16 @@ class SignupSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email')
 
-    def validate(self, data):
-        if data.get('username') == 'me':
+    def validate_username(self, value):
+        if value == 'me':
             raise serializers.ValidationError(
                 'Имя "me" в качестве username запрещено')
-        if User.objects.filter(username=data.get('username')):
-            raise serializers.ValidationError(
-                'Пользователь с таким username уже существует'
-            )
-        if User.objects.filter(email=data.get('email')):
-            raise serializers.ValidationError(
-                'Данный email уже зарегистрирован')
-        return data
+        return value
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+$',
-        max_length=150,
-        required=True
-    )
-    confirmation_code = serializers.CharField(
-        max_length=150,
-        required=True
-    )
+    username = serializers.CharField(max_length=150, required=True)
+    confirmation_code = serializers.CharField(max_length=150, required=True)
 
 
 class GenresSerializer(serializers.ModelSerializer):
