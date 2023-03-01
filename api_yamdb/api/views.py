@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.exceptions import ValidationError
 
-from .permissions import IsAdminOrReadOnly, IsAdminOrSuperUser
+from .permissions import IsAdminOrReadOnly, IsAdminOrSuperUser, IsUserAdminModeratorOrReadOnly
 from .serializers import (
     SignupSerializer, UserSerializer, ProfileSerializer, TokenSerializer,
     GenresSerializer, TitleSerializer, CategorieSerializer, CommentSerializer,
@@ -154,7 +154,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class ReviewViewset(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthorOrReadOnly]
+    permission_classes = [
+        IsUserAdminModeratorOrReadOnly]
 
     def get_title(self):
         """Достаем произведение."""
@@ -174,7 +175,8 @@ class ReviewViewset(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthorOrReadOnly]
+    permission_classes = [
+        IsAuthenticatedOrReadOnly, IsUserAdminModeratorOrReadOnly]
 
     def get_review(self):
         """Достаем отзыв."""

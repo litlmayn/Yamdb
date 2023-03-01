@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 from users.models import User
 from titles.models import Title
 
@@ -14,7 +16,10 @@ class Review(models.Model):
     text = models.TextField()
     score = models.IntegerField()
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE
+        Title,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        null=True,
     )
 
     def __str__(self):
@@ -31,8 +36,10 @@ class Comment(models.Model):
     )
     text = models.TextField()
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments',
     )
-    title = models.ForeignKey(
-        Title, on_delete=models.CASCADE
-    )
+
+    def __str__(self):
+        return self.text
