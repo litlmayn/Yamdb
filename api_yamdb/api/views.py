@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from users.models import User
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .permissions import (IsAuthorOrReadOnly)
+from .permissions import (IsAuthorOrReadOnly, IsUserAdminModeratorOrReadOnly)
 from django.shortcuts import get_object_or_404
 from users.models import User
 from review.models import Review
@@ -140,9 +140,6 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def get_profile(self, request):
         serializer = ProfileSerializer(request.user)
-        if 'role' in request.data:
-            return Response(serializer.data,
-                            status=status.HTTP_400_BAD_REQUEST)
         if request.method == 'PATCH':
             serializer = ProfileSerializer(request.user, data=request.data,
                                            partial=True)
@@ -154,8 +151,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class ReviewViewset(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [
-        IsUserAdminModeratorOrReadOnly]
+    permission_classes = [IsUserAdminModeratorOrReadOnly]
+    pagination_class = PageNumberPagination
 
     def get_title(self):
         """Достаем произведение."""
@@ -175,8 +172,8 @@ class ReviewViewset(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [
-        IsAuthenticatedOrReadOnly, IsUserAdminModeratorOrReadOnly]
+    permission_classes = [IsUserAdminModeratorOrReadOnly]
+    pagination_class = PageNumberPagination
 
     def get_review(self):
         """Достаем отзыв."""
