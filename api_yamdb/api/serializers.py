@@ -24,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(regex=r'^[\w.@+-]+\Z', max_length=150)
-    email = serializers.CharField(max_length=254)
+    email = serializers.EmailField(max_length=254)
 
     class Meta:
         model = User
@@ -34,6 +34,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class SignupSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z', max_length=150)
+    email = serializers.EmailField(max_length=254)
 
     class Meta:
         model = User
@@ -49,6 +51,11 @@ class SignupSerializer(serializers.ModelSerializer):
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150, required=True)
     confirmation_code = serializers.CharField(max_length=150, required=True)
+    
+    class Meta:
+        model = User
+        fields = (
+            'username', 'confirmation_code')
 
 
 class GenresSerializer(serializers.ModelSerializer):

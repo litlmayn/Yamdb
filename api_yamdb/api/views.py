@@ -14,6 +14,7 @@ from review.models import Review
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.exceptions import ValidationError
 
 from .permissions import IsAdminOrReadOnly, IsAdminOrSuperUser
 from .serializers import (
@@ -67,14 +68,17 @@ class SignupViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     permission_classes = (AllowAny,)
 
     def create(self, request, *args, **kwargs):
-        data = request.data
-        serializer = self.get_serializer(data=data)
-        username = data.get('username')
+        serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        user = User.objects.get(username=username)
-        confirmation_code = default_token_generator.make_token(user)
-        email = user.email
+        username = serializer.validated_data.get('username')
+        email = serializer.validated_data.get('email')
+        try:
+            user, _ = User.objects.get_or_create(
+                username=username, email=email)
+            confirmation_code = default_token_generator.make_token(user)
+        except Exception:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         send_mail(
             'Код подтверждения',
             f'Ваш код подтверждения: {confirmation_code}',
@@ -82,6 +86,24 @@ class SignupViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             [email],
             fail_silently=False,)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TokenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    queryset = User.objects.all()
+    serializer_class = TokenSerializer
+    permission_classes = (AllowAny,)
+
+    def create(self, request, *args, **kwargs):
+        serializer = TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data.get('username')
+        confirmation_code = serializer.validated_data.get('confirmation_code')
+        user = get_object_or_404(User, username=username)
+        if default_token_generator.check_token(user, confirmation_code):
+            token = AccessToken.for_user(user)
+            return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
+        return Response({'confirmation_code': 'Неверный код подтверждения'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -128,24 +150,6 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.data)
-
-
-class TokenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    queryset = User.objects.all()
-    serializer_class = TokenSerializer
-    permission_classes = (AllowAny,)
-
-    def create(self, request, *args, **kwargs):
-        serializer = TokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        username = serializer.validated_data.get('username')
-        confirmation_code = serializer.validated_data.get('confirmation_code')
-        user = get_object_or_404(User, username=username)
-        if not default_token_generator.check_token(user, confirmation_code):
-            return Response({'confirmation_code': 'Неверный код подтверждения'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        token = AccessToken.for_user(user)
-        return Response(token, status=status.HTTP_200_OK)
 
 
 class ReviewViewset(viewsets.ModelViewSet):
