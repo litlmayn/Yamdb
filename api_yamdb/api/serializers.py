@@ -1,4 +1,6 @@
 from rest_framework import serializers, filters
+from django.db.models import Avg
+
 from users.models import User
 from titles.models import Categories, Genres, Title
 from review.models import Review, Comment
@@ -49,9 +51,10 @@ class SignupSerializer(serializers.ModelSerializer):
 
 
 class TokenSerializer(serializers.Serializer):
+
     username = serializers.CharField(max_length=150, required=True)
     confirmation_code = serializers.CharField(max_length=150, required=True)
-    
+
     class Meta:
         model = User
         fields = (
@@ -108,6 +111,9 @@ class TitleSerializer(serializers.ModelSerializer):
         )
         filter_backends = (filters.SearchFilter,)
         search_fields = ('genre')
+
+    def get_rating(self, obj):
+        return obj.reviews.all().aggregate(Avg('score'))['score__avg']
 
 
 class CommentSerializer(serializers.ModelSerializer):
