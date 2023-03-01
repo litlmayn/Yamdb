@@ -97,7 +97,7 @@ class TitleSerializer(serializers.ModelSerializer):
         queryset=Genres.objects.all(),
         many=True
     )
-    categories = CategoryField(
+    category = CategoryField(
         slug_field='slug',
         queryset=Categories.objects.all()
     )
@@ -107,7 +107,7 @@ class TitleSerializer(serializers.ModelSerializer):
         model = Title
         fields = (
             'id', 'name', 'year', 'rating',
-            'description', 'genre', 'categories',
+            'description', 'genre', 'category',
         )
         filter_backends = (filters.SearchFilter,)
         search_fields = ('genre')
