@@ -14,13 +14,9 @@ class User(AbstractUser):
     ]
     email = models.EmailField(max_length=254, unique=True)
     username = models.CharField(
-        max_length=150,
         verbose_name='Имя пользователя',
+        max_length=150,
         unique=True,
-        validators=[RegexValidator(
-            regex=r'^[\w.@+-]+$',
-            message='Имя содержит недопустимый символ'
-        )]
     )
     bio = models.TextField(
         'Биография',

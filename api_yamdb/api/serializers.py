@@ -7,6 +7,7 @@ from review.models import Review, Comment
 
 
 class UserSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z', max_length=150)
 
     class Meta:
         model = User
@@ -16,12 +17,19 @@ class UserSerializer(serializers.ModelSerializer):
             'email': {'required': True},
             'username': {'required': True}}
 
-    def validate_email(self, value):
-        if value == self.context['request'].user:
+    def validate_username(self, username):
+        if username == 'me':
             raise serializers.ValidationError(
-                'Данный email уже зарегистрирован'
+                'Имя "me" в качестве username запрещено'
             )
-        return value
+        duplicated_username = User.objects.filter(
+            username=username
+        ).exists()
+        if duplicated_username:
+            raise serializers.ValidationError(
+                'Такое имя уже зарегистрировано'
+            )
+        return username
 
 
 class ProfileSerializer(serializers.ModelSerializer):
