@@ -1,10 +1,9 @@
-from rest_framework import serializers, filters
-from rest_framework.validators import UniqueTogetherValidator
 from django.db.models import Avg
+from rest_framework import serializers, filters
 
-from users.models import User
-from titles.models import Categories, Genres, Title
 from reviews.models import Review, Comment
+from titles.models import Categories, Genres, Title
+from users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -127,7 +126,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
-        read_only=True, 
+        read_only=True,
     )
 
     class Meta:

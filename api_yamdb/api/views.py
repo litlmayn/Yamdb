@@ -1,30 +1,29 @@
-from rest_framework import viewsets, mixins, status, filters
-from rest_framework.decorators import action
+from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from users.models import User
+from rest_framework import viewsets, mixins, status, filters
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .permissions import (IsAuthorOrReadOnly, IsUserAdminModeratorOrReadOnly)
-from django.shortcuts import get_object_or_404
-from users.models import User
-from reviews.models import Review
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import (
+    IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.exceptions import ValidationError
 
-from .permissions import IsAdminOrReadOnly, IsAdminOrSuperUser, IsUserAdminModeratorOrReadOnly
+from .permissions import (
+    IsAdminOrReadOnly, IsAdminOrSuperUser, IsUserAdminModeratorOrReadOnly
+)
 from .serializers import (
     SignupSerializer, UserSerializer, ProfileSerializer, TokenSerializer,
     GenresSerializer, TitleSerializer, CategorieSerializer, CommentSerializer,
     ReviewSerializer)
-from titles.models import Title, Genres, Categories
 from .filters import TitleFilter
-from django.conf import settings
+from reviews.models import Review
+from titles.models import Title, Genres, Categories
+from users.models import User
 
 
 class GetListCreateDeleteViewSet(mixins.ListModelMixin,
@@ -165,7 +164,9 @@ class ReviewViewset(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Создание отзыва."""
-        if Review.objects.filter(title=self.get_title(), author=self.request.user).exists():
+        if Review.objects.filter(
+            title=self.get_title(), author=self.request.user
+        ).exists():
             raise ValidationError
         serializer.save(
             author=self.request.user,
