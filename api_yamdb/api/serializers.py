@@ -4,7 +4,7 @@ from django.db.models import Avg
 
 from users.models import User
 from titles.models import Categories, Genres, Title
-from review.models import Review, Comment
+from reviews.models import Review, Comment
 
 
 class UserSerializer(serializers.ModelSerializer):
