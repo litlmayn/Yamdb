@@ -172,12 +172,15 @@ class ReviewViewset(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [IsUserAdminModeratorOrReadOnly]
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        IsUserAdminModeratorOrReadOnly,
+    )
     pagination_class = PageNumberPagination
 
     def get_review(self):
         """Достаем отзыв."""
-        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
 
     def get_queryset(self):
         """Проверка комментария."""
@@ -187,5 +190,5 @@ class CommentViewSet(viewsets.ModelViewSet):
         """Создание комментария."""
         serializer.save(
             author=self.request.user,
-            title=self.get_review()
+            review=self.get_review()
         )

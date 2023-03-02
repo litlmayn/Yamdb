@@ -124,16 +124,6 @@ class TitleSerializer(serializers.ModelSerializer):
         return obj.reviews.all().aggregate(Avg('score'))['score__avg']
 
 
-class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(
-        read_only=True
-    )
-
-    class Meta:
-        model = Comment
-        fields = '__all__'
-
-
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
         read_only=True
@@ -141,4 +131,18 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = (
+            'id', 'text', 'author', 'score', 'pub_date',
+        )
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(
+        read_only=True
+    )
+
+    class Meta:
+        model = Comment
+        fields = (
+            'id', 'text', 'author', 'pub_date',
+        )
