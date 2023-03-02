@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .permissions import (IsAuthorOrReadOnly, IsUserAdminModeratorOrReadOnly)
 from django.shortcuts import get_object_or_404
 from users.models import User
-from review.models import Review
+from reviews.models import Review
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
