@@ -5,6 +5,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from users.models import User
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .permissions import (IsAuthorOrReadOnly, IsUserAdminModeratorOrReadOnly)
@@ -164,9 +165,11 @@ class ReviewViewset(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Создание отзыва."""
+        if Review.objects.filter(title=self.get_title(), author=self.request.user).exists():
+            raise ValidationError
         serializer.save(
             author=self.request.user,
-            title=self.get_title()
+            title=self.get_title(),
         )
 
 

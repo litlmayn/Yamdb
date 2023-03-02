@@ -1,4 +1,5 @@
 from rest_framework import serializers, filters
+from rest_framework.validators import UniqueTogetherValidator
 from django.db.models import Avg
 
 from users.models import User
@@ -126,7 +127,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
-        read_only=True
+        read_only=True, 
     )
 
     class Meta:
