@@ -35,7 +35,6 @@ FIELDS = {
 
 
 def open_csv_file(file_name):
-    """Менеджер контекста для открытия csv-файлов."""
     csv_file = file_name + '.csv'
     csv_path = os.path.join(CSV_FILES_DIR, csv_file)
     try:
@@ -47,7 +46,6 @@ def open_csv_file(file_name):
 
 
 def change_foreign_values(data_csv):
-    """Изменяет значения."""
     data_csv_copy = data_csv.copy()
     for field_key, field_value in data_csv.items():
         if field_key in FIELDS.keys():
@@ -58,7 +56,6 @@ def change_foreign_values(data_csv):
 
 
 def load_csv(file_name, class_name):
-    """Осуществляет загрузку csv-файлов."""
     table_not_loaded = f'Таблица {class_name.__qualname__} не загружена.'
     table_loaded = f'Таблица {class_name.__qualname__} загружена.'
     data = open_csv_file(file_name)
@@ -77,7 +74,6 @@ def load_csv(file_name, class_name):
 
 
 class Command(BaseCommand):
-    """Класс загрузки тестовой базы данных."""
 
     def handle(self, *args, **options):
         for key, value in FILES_CLASSES.items():
