@@ -130,6 +130,7 @@ class TitleSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(error_msg)
         return value
 
+
 class ReadTitleSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(read_only=True)
     genre = GenresSerializer(read_only=True, many=True)
@@ -141,7 +142,6 @@ class ReadTitleSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'description',
             'genre', 'category', 'rating',
         )
-
 
 
 class ReviewSerializer(serializers.ModelSerializer):
