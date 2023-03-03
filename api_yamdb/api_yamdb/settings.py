@@ -13,8 +13,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
+MAX_LENGHT = 256
+SLUG_MAX_LENGHT = 50
 # Application definition
+
+VALUE_DISPLAY = '-Empty-'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
