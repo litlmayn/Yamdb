@@ -22,10 +22,13 @@ class Abstraction(models.Model):
     class Meta:
         abstract = True
 
+    def __str__(self):
+        return self.text
+
 
 class Review(Abstraction):
     score = models.PositiveSmallIntegerField(
-        default=10,
+        default=5,
         validators=[
             MinValueValidator(
                 1,
@@ -55,9 +58,7 @@ class Review(Abstraction):
             ),
         )
         verbose_name_plural = 'Отзывы',
-
-    def __str__(self):
-        return self.text
+        default_related_name = '%(app_label)s_%(class)s_rewiews'
 
 
 class Comment(Abstraction):
@@ -70,6 +71,4 @@ class Comment(Abstraction):
 
     class Meta(Abstraction.Meta):
         verbose_name_plural = 'Комментарии',
-
-    def __str__(self):
-        return self.text
+        default_related_name = '%(app_label)s_%(class)s_rewiews'

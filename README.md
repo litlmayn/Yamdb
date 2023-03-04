@@ -8,7 +8,7 @@
 ```
 Django
 DRF
-Pethon
+Python
 ```
 
 ### Ссылка на документацию:
