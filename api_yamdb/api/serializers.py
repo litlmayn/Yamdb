@@ -24,6 +24,13 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         return username_validator(value)
 
+    def validate(self, data):
+        if User.objects.filter(username=data.get('username')):
+            raise serializers.ValidationError(
+                'Имя пользователя уже занято!'
+            )
+        return data
+
 
 class ProfileSerializer(UserSerializer):
 

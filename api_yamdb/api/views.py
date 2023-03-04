@@ -122,13 +122,13 @@ class UserViewSet(viewsets.ModelViewSet):
         url_path='me',
     )
     def get_profile(self, request):
-        serializer = ProfileSerializer(request.user)
         if request.method == 'PATCH':
             serializer = ProfileSerializer(
                 request.user, data=request.data, partial=True
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
+        serializer = ProfileSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
