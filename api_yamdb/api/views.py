@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from rest_framework import viewsets, mixins, status, filters
 from rest_framework.decorators import action, api_view
-from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     IsAuthenticated, IsAuthenticatedOrReadOnly,
@@ -148,10 +147,6 @@ class ReviewViewset(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Создание отзыва."""
-        if Review.objects.filter(
-            title=self.get_title(), author=self.request.user
-        ).exists():
-            raise ValidationError
         serializer.save(
             author=self.request.user,
             title=self.get_title(),

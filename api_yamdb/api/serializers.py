@@ -145,6 +145,19 @@ class ReviewSerializer(serializers.ModelSerializer):
             'id', 'text', 'author', 'score', 'pub_date',
         )
 
+    def validate(self, data):
+        """Проверка на повторный отзыв."""
+        print(self.context)
+        if not self.context.get('request').method == 'POST':
+            return data
+        author = self.context.get('request').user
+        title_id = self.context.get('view').kwargs.get('title_id')
+        if Review.objects.filter(author=author, title=title_id).exists():
+            raise serializers.ValidationError(
+                'Запрещено оставлять повторный отзыв'
+            )
+        return data
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
