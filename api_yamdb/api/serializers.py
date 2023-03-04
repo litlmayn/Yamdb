@@ -6,11 +6,12 @@ from reviews.models import Review, Comment
 from titles.models import Categories, Genres, Title
 from users.models import User
 from django.conf import settings
+from rest_framework.fields import CharField
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+\Z', max_length=settings.MAX_LENGHT_USERNAME,
+    username = CharField(
+        max_length=settings.MAX_LENGHT_USERNAME,
         validators=(username_validator,))
 
     class Meta:
@@ -21,9 +22,6 @@ class UserSerializer(serializers.ModelSerializer):
             'email': {'required': True},
             'username': {'required': True}}
 
-    def validate_username(self, value):
-        return username_validator(value)
-
     def validate(self, data):
         if User.objects.filter(username=data.get('username')):
             raise serializers.ValidationError(
@@ -33,14 +31,13 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(UserSerializer):
-
     class Meta(UserSerializer.Meta):
         read_only_fields = ('role',)
 
 
-class SignupSerializer(serializers.ModelSerializer):
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+\Z', max_length=settings.MAX_LENGHT_USERNAME,
+class SignupSerializer(serializers.Serializer):
+    username = CharField(
+        max_length=settings.MAX_LENGHT_USERNAME,
         validators=(username_validator,))
     email = serializers.EmailField(max_length=settings.MAX_LENGHT_EMAIL)
 
@@ -48,13 +45,11 @@ class SignupSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email')
 
-    def validate_username(self, value):
-        return username_validator(value)
-
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(
-        max_length=settings.MAX_LENGHT_USERNAME, required=True)
+        max_length=settings.MAX_LENGHT_USERNAME,
+        validators=(username_validator,), required=True)
     confirmation_code = serializers.CharField(
         max_length=settings.MAX_LENGHT_EMAIL, required=True)
 
@@ -62,9 +57,6 @@ class TokenSerializer(serializers.Serializer):
         model = User
         fields = (
             'username', 'confirmation_code')
-
-    def validate_username(self, value):
-        return username_validator(value)
 
 
 class GenresSerializer(serializers.ModelSerializer):
