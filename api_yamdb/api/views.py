@@ -1,14 +1,15 @@
+from django.db import IntegrityError
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins, status, filters
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
-    IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly,
+    IsAuthenticated, IsAuthenticatedOrReadOnly,
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
@@ -62,48 +63,46 @@ class TitlesViewSet(viewsets.ModelViewSet):
     filterset_class = TitleFilter
 
 
-class SignupViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    queryset = User.objects.all()
-    serializer_class = SignupSerializer
-    permission_classes = (AllowAny,)
+@api_view(['POST'])
+def signup(request):
+    EMAIL_ERROR = 'Электронная почта уже занята!'
+    USERNAME_ERROR = 'Имя пользователя уже занято!'
+    serializer = SignupSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data.get('username')
+    email = serializer.validated_data.get('email')
+    try:
+        user, _ = User.objects.get_or_create(
+            username=username, email=email)
+    except IntegrityError:
+        error = (
+            EMAIL_ERROR if User.objects.filter(email=email).exists()
+            else USERNAME_ERROR)
+        return Response(
+            error, status=status.HTTP_400_BAD_REQUEST)
+    confirmation_code = default_token_generator.make_token(user)
+    send_mail(
+        'Код подтверждения',
+        f'Ваш код подтверждения: {confirmation_code}',
+        f'{settings.EMAIL_YAMDB}',
+        [email],
+        fail_silently=False,)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def create(self, request, *args, **kwargs):
-        serializer = SignupSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        username = serializer.validated_data.get('username')
-        email = serializer.validated_data.get('email')
-        try:
-            user, _ = User.objects.get_or_create(
-                username=username, email=email)
-            confirmation_code = default_token_generator.make_token(user)
-        except Exception:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        send_mail(
-            'Код подтверждения',
-            f'Ваш код подтверждения: {confirmation_code}',
-            f'{settings.EMAIL_YAMDB}',
-            [email],
-            fail_silently=False,)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-class TokenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    queryset = User.objects.all()
-    serializer_class = TokenSerializer
-    permission_classes = (AllowAny,)
-
-    def create(self, request, *args, **kwargs):
-        serializer = TokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        username = serializer.validated_data.get('username')
-        confirmation_code = serializer.validated_data.get('confirmation_code')
-        user = get_object_or_404(User, username=username)
-        if default_token_generator.check_token(user, confirmation_code):
-            token = AccessToken.for_user(user)
-            return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
-        return Response({'confirmation_code': 'Неверный код подтверждения'},
-                        status=status.HTTP_400_BAD_REQUEST)
+@api_view(['POST'])
+def get_token(request):
+    serializer = TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data.get('username')
+    confirmation_code = serializer.validated_data.get('confirmation_code')
+    user = get_object_or_404(User, username=username)
+    if default_token_generator.check_token(user, confirmation_code):
+        token = AccessToken.for_user(user)
+        return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
+    return Response(
+        {'confirmation_code': 'Неверный код подтверждения'},
+        status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -112,41 +111,24 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrSuperUser,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
+    lookup_field = 'username'
+    lookup_value_regex = r'[\w\@\.\+\-]+'
 
     @action(
-        detail=False,
-        methods=['get', 'patch', 'delete'],
-        url_path=r'(?P<username>[\w.@+-]+)',
-        url_name='get_user'
-    )
-    def get_user(self, request, username):
-        user = get_object_or_404(User, username=username)
-        if request.method == 'PATCH':
-            serializer = UserSerializer(user, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        elif request.method == 'DELETE':
-            user.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
-        detail=False,
         methods=['GET', 'PATCH'],
+        detail=False,
         permission_classes=[IsAuthenticated],
         url_path='me',
     )
     def get_profile(self, request):
         serializer = ProfileSerializer(request.user)
         if request.method == 'PATCH':
-            serializer = ProfileSerializer(request.user, data=request.data,
-                                           partial=True)
+            serializer = ProfileSerializer(
+                request.user, data=request.data, partial=True
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ReviewViewset(viewsets.ModelViewSet):

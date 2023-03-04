@@ -1,29 +1,37 @@
 from rest_framework import permissions
 
-from users.models import User
-
 
 class IsAdminOrSuperUser(permissions.BasePermission):
+    """Права доступа для аутентифицированных пользователей
+    со статусом администратора или суперюзера."""
+
     def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            request.user.is_superuser or request.user.role == User.ADMIN)
+        user = request.user
+        return (
+            user.is_authenticated and user.is_admin
+            or user.is_superuser)
 
 
 class IsAdminOrReadOnly(permissions.IsAdminUser):
+    """Права доступа для аутентифицированных пользователей
+    со статусом администратора или для чтения."""
+
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
             or request.user.is_authenticated
-            and request.user.role == User.ADMIN
+            and request.user.is_admin
         )
 
     def has_object_permission(self, request, view, obj):
         return request.method in permissions.SAFE_METHODS or (
-            request.user.is_authenticated and request.user.role == User.ADMIN
+            request.user.is_authenticated and request.user.is_admin
         )
 
 
 class IsUserAdminModeratorOrReadOnly(permissions.BasePermission):
+    """Права доступа для аутентифицированных пользователей
+    со статусом администратора, автора или модератора."""
 
     def has_permission(self, request, view):
         return (request.method in permissions.SAFE_METHODS
@@ -33,12 +41,14 @@ class IsUserAdminModeratorOrReadOnly(permissions.BasePermission):
         return (
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
-            or request.user.role == User.MODERATOR
-            or request.user.role == User.ADMIN
+            or request.user.is_admin
+            or request.user.is_moderator
         )
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
+    """Права доступа для пользователей со статусом автора."""
+
     def has_object_permission(self, request, view, obj):
         return (
             obj.author == request.user

@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.conf import settings
+from api.validators import username_validator
 
 
 class User(AbstractUser):
@@ -11,11 +13,15 @@ class User(AbstractUser):
         (MODERATOR, 'Модератор'),
         (ADMIN, 'Администратор'),
     ]
-    email = models.EmailField(max_length=254, unique=True)
+    email = models.EmailField(
+        'Электронная почта',
+        max_length=settings.MAX_LENGHT_EMAIL, unique=True
+    )
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=150,
         unique=True,
+        max_length=settings.MAX_LENGHT_USERNAME,
+        validators=(username_validator,),
     )
     bio = models.TextField(
         'Биография',
@@ -23,15 +29,37 @@ class User(AbstractUser):
     )
     role = models.CharField(
         'Роль пользователя',
-        max_length=16,
+        max_length=max(len(role) for role, _ in ROLE_CHOICES),
         choices=ROLE_CHOICES,
         default=USER,
+    )
+    first_name = models.CharField(
+        'Имя', max_length=settings.MAX_LENGHT_USERNAME, blank=True
+    )
+    last_name = models.CharField(
+        'Фамилия', max_length=settings.MAX_LENGHT_USERNAME, blank=True
     )
     confirmation_code = models.CharField(
         'Код подверждения',
         blank=True,
         null=True,
-        max_length=150)
+        max_length=settings.MAX_LENGHT_CODE
+    )
 
     class Meta:
         ordering = ('id',)
+
+    @property
+    def is_admin(self):
+        return (
+            self.role == 'admin'
+            or self.is_superuser
+            or self.is_staff
+        )
+
+    def __str__(self):
+        return self.username
+
+    @property
+    def is_moderator(self):
+        return self.role == 'moderator'
