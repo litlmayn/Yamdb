@@ -106,6 +106,7 @@ def get_token(request):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    http_method_names = ('get', 'post', 'patch', 'delete')
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdminOrSuperUser,)
