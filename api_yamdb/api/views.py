@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from rest_framework import viewsets, mixins, status, filters
 from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ValidationError
@@ -20,7 +21,7 @@ from .permissions import (
 from .serializers import (
     SignupSerializer, UserSerializer, ProfileSerializer, TokenSerializer,
     GenresSerializer, TitleSerializer, CategorieSerializer, CommentSerializer,
-    ReviewSerializer)
+    ReviewSerializer, ReadTitleSerializer)
 from .filters import TitleFilter
 from reviews.models import Review
 from titles.models import Title, Genres, Categories
@@ -31,36 +32,36 @@ class GetListCreateDeleteViewSet(mixins.ListModelMixin,
                                  mixins.CreateModelMixin,
                                  mixins.DestroyModelMixin,
                                  viewsets.GenericViewSet):
-    pass
+    lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    pagination_class = PageNumberPagination
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class GenresViewSet(GetListCreateDeleteViewSet):
     queryset = Genres.objects.all()
     serializer_class = GenresSerializer
-    lookup_field = 'slug'
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    pagination_class = PageNumberPagination
-    permission_classes = (IsAdminOrReadOnly,)
 
 
 class CategoriesViewSet(GetListCreateDeleteViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategorieSerializer
-    lookup_field = 'slug'
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    pagination_class = PageNumberPagination
-    permission_classes = (IsAdminOrReadOnly,)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
     serializer_class = TitleSerializer
     pagination_class = PageNumberPagination
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+    ordering_fields = '__all__'
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return TitleSerializer
+        return ReadTitleSerializer
 
 
 @api_view(['POST'])

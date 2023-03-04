@@ -5,16 +5,27 @@ from titles.models import Title
 from users.models import User
 
 
-class Review(models.Model):
+class Abstraction(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор',
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата публикации'
     )
-    text = models.TextField()
-    score = models.PositiveIntegerField(
+    text = models.TextField(
+        verbose_name='Текст',
+    )
+
+    class Meta:
+        abstract = True
+
+
+class Review(Abstraction):
+    score = models.PositiveSmallIntegerField(
+        default=10,
         validators=[
             MinValueValidator(
                 1,
@@ -24,7 +35,8 @@ class Review(models.Model):
                 10,
                 message='Введите оценку от 1 до 10!'
             ),
-        ]
+        ],
+        verbose_name='Оценка произведения',
     )
 
     title = models.ForeignKey(
@@ -32,34 +44,32 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         related_name='reviews',
         null=True,
+        verbose_name='Рецензия которому пишется отзыв',
     )
 
-    class Meta:
+    class Meta(Abstraction.Meta):
         constraints = (
             models.UniqueConstraint(
                 fields=['author', 'title'],
                 name='unique_author_title'
             ),
         )
+        verbose_name_plural = 'Отзывы',
 
     def __str__(self):
         return self.text
 
 
-class Comment(models.Model):
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
-    )
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата публикации'
-    )
-    text = models.TextField()
+class Comment(Abstraction):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
         related_name='comments',
+        verbose_name='Отзыв которому пишется комментарий',
     )
+
+    class Meta(Abstraction.Meta):
+        verbose_name_plural = 'Комментарии',
 
     def __str__(self):
         return self.text

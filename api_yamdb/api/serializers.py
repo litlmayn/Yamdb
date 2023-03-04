@@ -1,5 +1,5 @@
 from api.validators import username_validator
-from django.db.models import Avg
+import datetime as dt
 from rest_framework import serializers, filters
 
 from reviews.models import Review, Comment
@@ -100,19 +100,39 @@ class TitleSerializer(serializers.ModelSerializer):
         slug_field='slug',
         queryset=Categories.objects.all()
     )
-    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'rating',
+            'id', 'name', 'year',
             'description', 'genre', 'category',
         )
         filter_backends = (filters.SearchFilter,)
         search_fields = ('genre')
 
-    def get_rating(self, obj):
-        return obj.reviews.all().aggregate(Avg('score'))['score__avg']
+    def validate_year(self, value):
+        kw_data = self._kwargs['data']
+        category = kw_data['category']
+        if category == 'movie':
+            year = dt.date.today().year
+            start_year = 1895
+            error_msg = 'Проверьте год создания произведения!'
+            if not (start_year < value <= year):
+                raise serializers.ValidationError(error_msg)
+        return value
+
+
+class ReadTitleSerializer(serializers.ModelSerializer):
+    rating = serializers.IntegerField(read_only=True)
+    genre = GenresSerializer(read_only=True, many=True)
+    category = CategorieSerializer(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'description',
+            'genre', 'category', 'rating',
+        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):

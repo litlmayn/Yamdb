@@ -13,8 +13,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
+MAX_LENGHT = 256
+SLUG_MAX_LENGHT = 50
 # Application definition
+
+VALUE_DISPLAY = '-Empty-'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -112,6 +115,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
+
+CSV_FILES_DIR = os.path.join(BASE_DIR, 'static/data')
 
 AUTH_USER_MODEL = 'users.User'
 
