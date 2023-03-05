@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 from titles.models import Categories, Genres, Title
 
@@ -19,7 +20,7 @@ class TitleAdmin(admin.ModelAdmin):
     empty_value_display = settings.VALUE_DISPLAY
 
     def get_genre(self, object):
-        return ', '.join((genre.name for genre in object.genre.all()))
+        return _(', '.join(genre.name for genre in object.genre.all()))
 
 
 @admin.register(Genres)

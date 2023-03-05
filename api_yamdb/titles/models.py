@@ -1,6 +1,5 @@
-import datetime as dt
 from django.db import models
-from django.core.validators import MaxValueValidator
+from django.core.validators import MinValueValidator
 from django.conf import settings
 
 
@@ -40,7 +39,7 @@ class Title(models.Model):
         blank=True, null=True,
         error_messages={'validators': 'Проверьте год'},
         validators=[
-            MaxValueValidator(int(dt.datetime.now().year))
+            MinValueValidator(0,)
         ],
         db_index=True
     )
