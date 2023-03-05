@@ -77,25 +77,13 @@ class CategorieSerializer(serializers.ModelSerializer):
         }
 
 
-class GenreField(serializers.SlugRelatedField):
-    def to_representation(self, value):
-        serializer = GenresSerializer(value)
-        return serializer.data
-
-
-class CategoryField(serializers.SlugRelatedField):
-    def to_representation(self, value):
-        serializer = CategorieSerializer(value)
-        return serializer.data
-
-
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreField(
+    genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genres.objects.all(),
         many=True
     )
-    category = CategoryField(
+    category = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Categories.objects.all()
     )
@@ -119,6 +107,10 @@ class TitleSerializer(serializers.ModelSerializer):
             if not (start_year < value <= year):
                 raise serializers.ValidationError(error_msg)
         return value
+
+    def to_representation(self, value):
+        serializer = ReadTitleSerializer(value)
+        return serializer.data
 
 
 class ReadTitleSerializer(serializers.ModelSerializer):

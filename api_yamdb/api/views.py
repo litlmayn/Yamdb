@@ -5,7 +5,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
-from rest_framework import viewsets, mixins, status, filters
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action, api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
@@ -14,6 +14,7 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
+from .mixins import GetListCreateDeleteViewSet
 from .permissions import (
     IsAdminOrReadOnly, IsAdminOrSuperUser, IsUserAdminModeratorOrReadOnly
 )
@@ -25,17 +26,6 @@ from .filters import TitleFilter
 from reviews.models import Review
 from titles.models import Title, Genres, Categories
 from users.models import User
-
-
-class GetListCreateDeleteViewSet(mixins.ListModelMixin,
-                                 mixins.CreateModelMixin,
-                                 mixins.DestroyModelMixin,
-                                 viewsets.GenericViewSet):
-    lookup_field = 'slug'
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    pagination_class = PageNumberPagination
-    permission_classes = (IsAdminOrReadOnly,)
 
 
 class GenresViewSet(GetListCreateDeleteViewSet):
@@ -53,9 +43,9 @@ class TitlesViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     pagination_class = PageNumberPagination
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
     filterset_class = TitleFilter
-    ordering_fields = '__all__'
+    ordering_fields = ('year', 'name', 'category')
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:

@@ -1,6 +1,6 @@
 from django.contrib import admin
+from django.conf import settings
 
-from api_yamdb.settings import VALUE_DISPLAY
 from titles.models import Categories, Genres, Title
 
 
@@ -16,7 +16,10 @@ class TitleAdmin(admin.ModelAdmin):
         'name', 'year',
         'description', 'category',
     )
-    empty_value_display = VALUE_DISPLAY
+    empty_value_display = settings.VALUE_DISPLAY
+
+    def get_genre(self, object):
+        return ', '.join((genre.name for genre in object.genre.all()))
 
 
 @admin.register(Genres)
@@ -25,7 +28,7 @@ class GenresAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug', 'description',)
     list_filter = ('name',)
     list_editable = ('name', 'slug', 'description',)
-    empty_value_display = VALUE_DISPLAY
+    empty_value_display = settings.VALUE_DISPLAY
 
 
 @admin.register(Categories)
@@ -34,4 +37,4 @@ class CategoriesAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug', 'description',)
     list_filter = ('name',)
     list_editable = ('name', 'slug', 'description',)
-    empty_value_display = VALUE_DISPLAY
+    empty_value_display = settings.VALUE_DISPLAY
