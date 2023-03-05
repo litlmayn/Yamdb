@@ -45,7 +45,6 @@ class Review(Abstraction):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews',
         null=True,
         verbose_name='Рецензия которому пишется отзыв',
     )
@@ -58,17 +57,16 @@ class Review(Abstraction):
             ),
         )
         verbose_name_plural = 'Отзывы',
-        default_related_name = '%(app_label)s_%(class)s_rewiews'
+        default_related_name = 'reviews'
 
 
 class Comment(Abstraction):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name='comments',
         verbose_name='Отзыв которому пишется комментарий',
     )
 
     class Meta(Abstraction.Meta):
         verbose_name_plural = 'Комментарии',
-        default_related_name = '%(app_label)s_%(class)s_rewiews'
+        default_related_name = 'comments'
