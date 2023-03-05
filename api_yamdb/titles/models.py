@@ -1,47 +1,48 @@
 import datetime as dt
 from django.db import models
 from django.core.validators import MaxValueValidator
+from django.conf import settings
 
-from api_yamdb.settings import MAX_LENGHT, SLUG_MAX_LENGHT
 
-
-class Genres(models.Model):
-    name = models.TextField(max_length=MAX_LENGHT)
+class GenresCategories(models.Model):
+    name = models.TextField(max_length=settings.MAX_LENGHT)
     slug = models.SlugField(
         'Slug', unique=True,
-        max_length=SLUG_MAX_LENGHT
+        max_length=settings.SLUG_MAX_LENGHT
     )
     description = models.TextField()
 
     class Meta:
         ordering = ('name',)
+        abstract = True
+
+    def __str__(self):
+        return self.name
+
+
+class Genres(GenresCategories):
+
+    class Meta(GenresCategories.Meta):
         verbose_name = 'Жанр произведения'
 
-    def __str__(self):
-        return self.name
 
+class Categories(GenresCategories):
 
-class Categories(models.Model):
-    name = models.TextField(max_length=MAX_LENGHT)
-    slug = models.SlugField(unique=True, max_length=SLUG_MAX_LENGHT)
-    description = models.TextField()
-
-    class Meta:
-        ordering = ('name',)
+    class Meta(GenresCategories.Meta):
         verbose_name = 'Категория произведения'
-
-    def __str__(self):
-        return self.name
 
 
 class Title(models.Model):
     name = models.CharField(
-        'Name', max_length=MAX_LENGHT
+        'Name', max_length=settings.MAX_LENGHT
     )
     year = models.PositiveSmallIntegerField(
         blank=True, null=True,
         error_messages={'validators': 'Проверьте год'},
-        validators=[MaxValueValidator(dt.date.today().year)]
+        validators=[
+            MaxValueValidator(int(dt.datetime.now().year))
+        ],
+        db_index=True
     )
     category = models.ForeignKey(
         Categories,
