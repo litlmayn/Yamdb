@@ -1,12 +1,13 @@
-from api.validators import username_validator
 import datetime as dt
-from rest_framework import serializers, filters
 
+from django.conf import settings
+from rest_framework import serializers, filters
+from rest_framework.fields import CharField
+
+from api.validators import username_validator
 from reviews.models import Review, Comment
 from titles.models import Categories, Genres, Title
 from users.models import User
-from django.conf import settings
-from rest_framework.fields import CharField
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -109,8 +110,7 @@ class TitleSerializer(serializers.ModelSerializer):
         return value
 
     def to_representation(self, value):
-        serializer = ReadTitleSerializer(value)
-        return serializer.data
+        return ReadTitleSerializer(value).data
 
 
 class ReadTitleSerializer(serializers.ModelSerializer):
@@ -139,7 +139,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Проверка на повторный отзыв."""
-        print(self.context)
         if not self.context.get('request').method == 'POST':
             return data
         author = self.context.get('request').user

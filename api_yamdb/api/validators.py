@@ -3,8 +3,7 @@ from django.core.exceptions import ValidationError
 
 
 def username_validator(value):
-    s = re.sub(r'[\w.@+-]', '', value)
-    symbol = ''.join(set(s))
+    symbol = ''.join(set(re.sub(r'[\w.@+-]', '', value)))
     if value == 'me':
         raise ValidationError(
             'Имя "me" в качестве username запрещено')

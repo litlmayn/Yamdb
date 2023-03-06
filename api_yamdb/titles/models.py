@@ -1,6 +1,8 @@
-from django.db import models
-from django.core.validators import MinValueValidator
+import datetime as dt
+
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db import models
 
 
 class GenresCategories(models.Model):
@@ -39,7 +41,8 @@ class Title(models.Model):
         blank=True, null=True,
         error_messages={'validators': 'Проверьте год'},
         validators=[
-            MinValueValidator(0,)
+            MinValueValidator(0,),
+            MaxValueValidator(int(dt.datetime.now().year))
         ],
         db_index=True
     )
